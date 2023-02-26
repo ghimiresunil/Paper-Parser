@@ -1,0 +1,133 @@
+import re
+import fitz
+import pathlib
+import docx2txt
+from subprocess import PIPE, Popen
+from config import REPLACEMENTS
+from typing import Iterator
+
+
+def clean_text(text: str, lower_case: bool) -> Iterator[str]:
+    """
+    Clean a text by performing several pre-processing steps and returning an iterator of individual characters.
+
+    Args:
+        text (str): The input text to be cleaned.
+        lower_case (bool): If True, the text is converted to lowercase.
+
+    Returns:
+        An iterator that yields individual characters of the cleaned text.
+    """
+    if lower_case:
+        text = text.lower()
+
+    text = "\n".join(line.strip() for line in text.splitlines())
+
+    for old, new in REPLACEMENTS.items():
+        text = re.sub(old, new, text)
+
+    text = text.encode("ascii", errors="ignore").decode("utf-8")
+    regex = re.compile(r"\b(a|an|the)\b", re.UNICODE)
+    text = re.sub(regex, " ", text)
+
+    yield from text
+
+
+def read_file_pdf(file_path: str, lower_case: bool) -> Iterator[str]:
+    """
+    Returns an iterator that yields cleaned text strings from the specified PDF file
+
+    Args:
+        file_path (str): The file path of the PDF file to read
+        lower_case (bool): Whether or not to convert the text to lowercase before cleaning.
+
+    Yields:
+        Iterator[str]: An iterator that yields cleaned text strings from the PDF file
+    
+    Raises:
+        Exception: If there is an error opening or reading the PDF file
+    """
+    
+    try:
+        doc = fitz.open(file_path)
+        number_of_pages = doc.page_count
+        for i in range(0, number_of_pages):
+            content = doc.load_page(i).get_text("text", sort=True, flags=16)
+            content += content
+        content = "".join(list(clean_text(content, lower_case)))
+        yield from content
+    except Exception as e:
+        raise Exception(f"Error reading DOCX file: {str(e)}")
+
+def read_file_docx(file_path: str, dolower: bool) -> Iterator[str]:
+    """
+    Returns an iterator that yields cleaned text strings from the specified DOCX file.
+
+    Args:
+        file_path (str): The file path of the DOCX file to read
+        dolower (bool): Whether or not to convert the text to lowercase before cleaning
+
+    Yields:
+        Iterator[str]: An iterator that yields cleaned text strings from the DOCX file.
+
+    """
+    
+    try:
+        paragraphs = docx2txt.process(file_path)
+        content = clean_text(paragraphs, dolower)
+        yield from content
+    except Exception as e:
+        raise Exception(f"Error reading DOCX file: {str(e)}")
+
+
+def read_file(file_path: str, lower_case: bool) -> Iterator[str]:
+    """
+    Reads a file and returns an iterator that yields each line of text in the file.
+
+    Args:
+        file_path (str): The path to the file to be read.
+        lower_case (bool): If True, the text will be converted to lowercase.
+
+    Yields:
+        Iterator[str]: An iterator that yields each line of text in the file.
+    """
+    
+    suffix = pathlib.Path(file_path).suffix
+    match suffix:
+        case ".docx":
+            return read_file_docx(file_path, lower_case)
+        case ".pdf":
+            return read_file_pdf(file_path, lower_case)
+
+
+def read(file_path: str, lower_case: bool) -> Iterator[str]:
+    """
+    Reads a file and returns an iterator that yields each line of text in the file.
+
+    If the specified location is a file, the function calls the "read_file" function to read the file. If the specified location is not a file, a ValueError is raised.
+    
+    Args:
+        file_path (str): The path to the file to be read.
+        lower_case (bool): If True, the text will be converted to lowercase.
+
+    Raises:
+        ValueError: _description_
+
+    Returns:
+        _type_: An iterator that yields each line of text in the file.
+
+    Raises:
+        ValueError: If the specified location is not a file.
+    """
+    
+    isFile = pathlib.Path(file_path).is_file()
+    if isFile:
+        return read_file(file_path, lower_case)
+    else:
+        raise ValueError(f"Location {file_path} is not a file.")
+
+
+if __name__ == "__main__":
+    location = "data/Animesh Jain.docx"
+    content = read(location, True)
+    print("".join(list(content)))
