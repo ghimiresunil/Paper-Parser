@@ -57,15 +57,15 @@ def read_file_pdf(file_path: str, lower_case: bool) -> Iterator[str]:
         content = "".join(list(clean_text(content, lower_case)))
         yield from content
     except Exception as e:
-        raise Exception(f"Error reading DOCX file: {str(e)}")
+        raise Exception(f"Error reading PDF file: {str(e)}")
 
-def read_file_docx(file_path: str, dolower: bool) -> Iterator[str]:
+def read_file_docx(file_path: str, lower_case: bool) -> Iterator[str]:
     """
     Returns an iterator that yields cleaned text strings from the specified DOCX file.
 
     Args:
         file_path (str): The file path of the DOCX file to read
-        dolower (bool): Whether or not to convert the text to lowercase before cleaning
+        lower_case (bool): Whether or not to convert the text to lowercase before cleaning
 
     Yields:
         Iterator[str]: An iterator that yields cleaned text strings from the DOCX file.
@@ -74,11 +74,30 @@ def read_file_docx(file_path: str, dolower: bool) -> Iterator[str]:
     
     try:
         paragraphs = docx2txt.process(file_path)
-        content = clean_text(paragraphs, dolower)
+        content = clean_text(paragraphs, lower_case)
         yield from content
     except Exception as e:
         raise Exception(f"Error reading DOCX file: {str(e)}")
 
+def read_file_txt(file_path: str, lower_case: bool) -> Iterator[str]:
+    """
+    Returns an iterator that yields cleaned text strings from the specified DOCX file.
+
+    Args:
+        file_path (str): The file path of the DOCX file to read
+        lower_case (bool): Whether or not to convert the text to lowercase before cleaning
+
+    Yields:
+        Iterator[str]: An iterator that yields cleaned text strings from the DOCX file.
+
+    """
+    try:
+        content = open(file_path, 'r', encoding="unicode_escape", errors="strict", buffering=1).read()
+        content = clean_text(content, lower_case)
+        yield from content
+    except Exception as e:
+        raise Exception(f"Error reading TEXT file: {str(e)}")
+        
 
 def read_file(file_path: str, lower_case: bool) -> Iterator[str]:
     """
@@ -98,7 +117,8 @@ def read_file(file_path: str, lower_case: bool) -> Iterator[str]:
             return read_file_docx(file_path, lower_case)
         case ".pdf":
             return read_file_pdf(file_path, lower_case)
-
+        case ".txt":
+            return read_file_txt(file_path, lower_case)
 
 def read(file_path: str, lower_case: bool) -> Iterator[str]:
     """
@@ -128,6 +148,6 @@ def read(file_path: str, lower_case: bool) -> Iterator[str]:
 
 
 if __name__ == "__main__":
-    location = "data/Animesh Jain.docx"
+    location = "data/Anand_Networking_Resume_v1.pdf"
     content = read(location, True)
     print("".join(list(content)))
