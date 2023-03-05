@@ -81,7 +81,7 @@ def read_file_docx(file_path: str, lower_case: bool) -> Iterator[str]:
 
 def read_file_txt(file_path: str, lower_case: bool) -> Iterator[str]:
     """
-    Returns an iterator that yields cleaned text strings from the specified DOCX file.
+    Returns an iterator that yields cleaned text strings from the specified TEXT file.
 
     Args:
         file_path (str): The file path of the DOCX file to read
@@ -98,7 +98,29 @@ def read_file_txt(file_path: str, lower_case: bool) -> Iterator[str]:
     except Exception as e:
         raise Exception(f"Error reading TEXT file: {str(e)}")
         
+def read_file_doc(file_path: str, lower_case: bool) -> Iterator[str]:
+    """
+    Returns an iterator that yields cleaned text strings from the specified DOC file.
 
+    Args:
+        file_path (str): The file path of the DOCX file to read
+        lower_case (bool): Whether or not to convert the text to lowercase before cleaning
+
+    Yields:
+        Iterator[str]: An iterator that yields cleaned text strings from the DOCX file.
+
+    """
+    try:
+        text = ""
+        cmd = ["antiword", file_path]
+        p = Popen(cmd, stdout=PIPE)
+        stdout, stderr = p.communicate()
+        text += stdout.decode("utf-8", "ignore")
+        text = clean_text(text, lower_case)
+        yield from text
+    except Exception as e:
+        raise Exception(f"Error reading TEXT file: {str(e)}")
+    
 def read_file(file_path: str, lower_case: bool) -> Iterator[str]:
     """
     Reads a file and returns an iterator that yields each line of text in the file.
@@ -119,6 +141,9 @@ def read_file(file_path: str, lower_case: bool) -> Iterator[str]:
             return read_file_pdf(file_path, lower_case)
         case ".txt":
             return read_file_txt(file_path, lower_case)
+        case ".doc":
+            return read_file_doc(file_path, lower_case)
+            
 
 def read(file_path: str, lower_case: bool) -> Iterator[str]:
     """
@@ -148,6 +173,6 @@ def read(file_path: str, lower_case: bool) -> Iterator[str]:
 
 
 if __name__ == "__main__":
-    location = "data/Anand_Networking_Resume_v1.pdf"
+    location = "data/manish.doc"
     content = read(location, True)
     print("".join(list(content)))
