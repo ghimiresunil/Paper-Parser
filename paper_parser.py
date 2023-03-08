@@ -2,9 +2,10 @@ import re
 import fitz
 import pathlib
 import docx2txt
+import concurrent.futures
 from subprocess import PIPE, Popen
 from config import REPLACEMENTS
-from typing import Iterator
+from typing import List, Iterator
 
 
 def clean_text(text: str, lower_case: bool) -> Iterator[str]:
@@ -145,7 +146,7 @@ def read_file(file_path: str, lower_case: bool) -> Iterator[str]:
             return read_file_doc(file_path, lower_case)
             
 
-def read(file_path: str, lower_case: bool) -> Iterator[str]:
+def read(file_path: List[str], lower_case: bool) -> Iterator[str]:
     """
     Reads a file and returns an iterator that yields each line of text in the file.
 
@@ -164,15 +165,18 @@ def read(file_path: str, lower_case: bool) -> Iterator[str]:
     Raises:
         ValueError: If the specified location is not a file.
     """
-    
-    isFile = pathlib.Path(file_path).is_file()
-    if isFile:
-        return read_file(file_path, lower_case)
-    else:
-        raise ValueError(f"Location {file_path} is not a file.")
-
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        future_to_file = {executor.submit(read_file, f, lower_case): f for f in file_path}
+        for future in concurrent.futures.as_completed(future_to_file):
+            f = future_to_file[future]
+            try:
+                yield (f, future.result())
+            except Exception as e:
+                raise ValueError(f"Error processing file {f}: {e}")
 
 if __name__ == "__main__":
-    location = "data/manish.doc"
-    content = read(location, True)
-    print("".join(list(content)))
+    final_result = {}
+    location = ["data/manish.doc", "data/jd.pdf"]
+    for file_key, file_value in read(location, True):
+        final_result[file_key] = file_value
+    print(final_result)
