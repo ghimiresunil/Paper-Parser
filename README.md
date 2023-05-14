@@ -1,4 +1,4 @@
-# 1. Paper-Parser
+# Paper-Parser
 
 Are you tired of manually extracting data and information from CVs, resumes, and academic documents? Look no further! Our GitHub repo can automatically extract unstructured data and information from these documents, saving you time and effort.
 
@@ -6,11 +6,11 @@ Whether you are a recruiter, HR manager, or academic institution, our software c
 
 Don't waste any more time sifting through stacks of resumes or academic transcripts. Try our GitHub today and experience the benefits of automated data extraction.
 
-## 1.1. How does it works?
+## How does it works?
 
 ![paper_parser_with_different_ext](https://user-images.githubusercontent.com/40186859/223016956-7c28a86c-0edf-48a7-ab6b-a5ae87b84201.png)
 
-## 1.2. Usage
+## Usage
 
 To use this repo, follow these steps:
 
@@ -19,7 +19,7 @@ To use this repo, follow these steps:
 - Run the program and wait for it to complete the data extraction process.
 - Review the extracted data and information, which will be presented in a structured format.
 
-### 1.2.1 Running the program
+### Running the program
 
 - Clone this repository on your local machine:
 ```
@@ -59,7 +59,7 @@ for file_key, file_value in read(location, True):
 print(final_result)
 ```
 
-### 1.2.2. How to Customize for Different Use Cases
+### How to Customize for Different Use Cases
 
 - **Add or remove fields to extract**: Depending on your specific use case, you may want to extract additional fields or remove some of the existing ones. You can modify the code in paper_parser.py file to do this. 
 
