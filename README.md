@@ -71,3 +71,6 @@ print(final_result)
 
 Note: To make these customizations, you will need to have some knowledge of Python programming and regular expressions. It is also recommended that you test your modifications thoroughly before using the paper parser in a production environment.
 
+## Contributing
+
+* Please open a [PR](https://guides.github.com/activities/forking/) for updating each parser engine (docx to text, doc to text, pdf to text, and text to text) 
